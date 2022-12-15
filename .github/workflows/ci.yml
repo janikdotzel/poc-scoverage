@@ -1,0 +1,42 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  verify-code-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run the tests with enabled coverage
+        run: sbt clean coverage test
+      - name: Generate the coverage report
+        run: sbt coverageReport
+        env:
+          MINIMUM_COVERAGE: 80
+        # Check the code coverage report to make sure it meets the minimum threshold
+        if: ${{ steps.coverageReport.outputs.lines_covered }} < ${{ env.MINIMUM_COVERAGE }}
+          exit 1
+
+#name: CI
+#
+#on: [push, pull_request]
+#
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Generate code coverage report
+#        uses: sbt/sbt-action@v1
+#        with:
+#          args: scoverage
+#      - name: Extract code coverage percentage
+#        run: |
+#          coverage=$(grep -oP 'all\s+\K\d+(?=%)' scoverage.xml)
+#          echo "Code coverage: $coverage%"
+#      - name: Check code coverage threshold
+#        if: $coverage >= 80
+#        run: echo "Code coverage is above 80%!"
+#      - name: Fail if code coverage threshold is not met
+#        if: $coverage < 80
+#        run: exit 1
