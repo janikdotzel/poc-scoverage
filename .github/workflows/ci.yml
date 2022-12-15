@@ -10,12 +10,17 @@ jobs:
       - name: Run the tests with enabled coverage
         run: sbt clean coverage test
       - name: Generate the coverage report
+        id: coverageReport
         run: sbt coverageReport
+
+      - name: Check the code coverage report to make sure it meets the minimum threshold
         env:
           MINIMUM_COVERAGE: 80
-        # Check the code coverage report to make sure it meets the minimum threshold
+        run: echo "Code Coverage ${{ steps.coverageReport.outputs.lines_covered }}%"
         if: ${{ steps.coverageReport.outputs.lines_covered }} < ${{ env.MINIMUM_COVERAGE }}
           exit 1
+
+
 
 #name: CI
 #
