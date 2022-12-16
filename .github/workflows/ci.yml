@@ -19,7 +19,7 @@ jobs:
         env:
           MINIMUM_COVERAGE: 80
         run: |
-          coverage=$(grep -oP 'all\s+\K\d+(?=%)' target/scala-2.13/scoverage-report/scoverage.xml)
+          coverage=$(grep -m 1 statement target/scala-2.13/scoverage-report/scoverage.xml | sed -E 's/.*statement-rate="([^"]*)\..*/\1/')
           echo "Code coverage: $coverage%"
           if [ "$coverage" -lt "$MINIMUM_COVERAGE" ]
           then
@@ -28,4 +28,6 @@ jobs:
           else
             echo "Code coverage is above the minimum threshold of $MINIMUM_COVERAGE%"
           fi
-          
+
+#          Get the exact coverage. E.g. 100.00
+#          coverage=$(grep -m 1 statement target/scala-2.13/scoverage-report/scoverage.xml | sed -E 's/.*statement-rate="([^"]*).*/\1/')
