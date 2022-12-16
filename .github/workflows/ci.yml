@@ -7,41 +7,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Run the tests with enabled coverage
         run: sbt clean coverage test
+
       - name: Generate the coverage report
-        id: coverageReport
+        id: coverage-report
         run: sbt coverageReport
 
       - name: Check the code coverage report to make sure it meets the minimum threshold
         env:
           MINIMUM_COVERAGE: 80
-        run: echo "Code Coverage ${{ steps.coverageReport.outputs.lines_covered }}%"
-        if: ${{ steps.coverageReport.outputs.lines_covered }} < ${{ env.MINIMUM_COVERAGE }}
-          exit 1
-
-
-
-#name: CI
-#
-#on: [push, pull_request]
-#
-#jobs:
-#  build:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Generate code coverage report
-#        uses: sbt/sbt-action@v1
-#        with:
-#          args: scoverage
-#      - name: Extract code coverage percentage
-#        run: |
-#          coverage=$(grep -oP 'all\s+\K\d+(?=%)' scoverage.xml)
-#          echo "Code coverage: $coverage%"
-#      - name: Check code coverage threshold
-#        if: $coverage >= 80
-#        run: echo "Code coverage is above 80%!"
-#      - name: Fail if code coverage threshold is not met
-#        if: $coverage < 80
-#        run: exit 1
+        run: |
+          coverage=$(grep -oP 'all\s+\K\d+(?=%)' target/scala-2.13/scoverage-report/scoverage.xml)
+          echo "Code coverage: $coverage%"
+          if [ "$coverage" -lt "$MINIMUM_COVERAGE" ]
+          then
+            echo "Code coverage is below the minimum threshold of $MINIMUM_COVERAGE%"
+            exit 1
+          else
+            echo "Code coverage is above the minimum threshold of $MINIMUM_COVERAGE%"
+          fi
+          
